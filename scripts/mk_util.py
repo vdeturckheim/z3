@@ -529,7 +529,7 @@ def find_c_compiler():
     raise MKException('C compiler was not found. Try to set the environment variable CC with the C compiler available in your system.')
 
 def set_version(major, minor, build, revision):
-    global VER_MAJOR, VER_MINOR, VER_BUILD, VER_TWEAK, GIT_DESCRIBE
+    global GIT_DESCRIBE
     VER_MAJOR = major
     VER_MINOR = minor
     VER_BUILD = build
