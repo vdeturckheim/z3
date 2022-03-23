@@ -143,8 +143,6 @@ stages:
         targetPath: $(Build.ArtifactStagingDirectory)
         artifactName: 'Windows64'
 
-        
-
 - stage: Package
   jobs:
   - job: NuGet64
