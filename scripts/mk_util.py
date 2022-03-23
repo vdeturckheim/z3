@@ -687,6 +687,7 @@ def parse_options():
     global DOTNET_CORE_ENABLED, DOTNET_KEY_FILE, JAVA_ENABLED, ML_ENABLED, STATIC_LIB, STATIC_BIN, PREFIX, GMP, PYTHON_PACKAGE_DIR, GPROF, GIT_HASH, GIT_DESCRIBE, PYTHON_INSTALL_ENABLED, PYTHON_ENABLED
     global LINUX_X64, SLOW_OPTIMIZE, LOG_SYNC, SINGLE_THREADED
     global GUARD_CF, ALWAYS_DYNAMIC_BASE
+    global VER_MAJOR, VER_MINOR, VER_BUILD, VER_TWEAK
     try:
         options, remainder = getopt.gnu_getopt(sys.argv[1:],
                                                'b:df:sxhmcvtnp:gj',
@@ -762,6 +763,14 @@ def parse_options():
         elif opt == '--guardcf':
             GUARD_CF = True
             ALWAYS_DYNAMIC_BASE = True # /GUARD:CF requires /DYNAMICBASE
+        elif opt == '--major':
+            VER_MAJOR = arg
+        elif opt == '--minor':
+            VER_MINOR = arg
+        elif opt == '--patch':
+            VER_BUILD = arg
+        elif opt == '--revision':
+            VER_TWEAK = arg            
         else:
             print("ERROR: Invalid command line option '%s'" % opt)
             display_help(1)
