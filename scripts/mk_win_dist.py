@@ -74,7 +74,7 @@ def display_help():
 
 # Parse configuration option for mk_make script
 def parse_options():
-    global FORCE_MK, JAVA_ENABLED, ZIP_BUILD_OUTPUTS, GIT_HASH, DOTNET_CORE_ENABLED, DOTNET_KEY_FILE, PYTHON_ENABLED, X86ONLY, X64ONLY
+    global FORCE_MK, JAVA_ENABLED, ZIP_BUILD_OUTPUTS, GIT_HASH, DOTNET_CORE_ENABLED, DOTNET_KEY_FILE, PYTHON_ENABLED, X86ONLY, X64ONLY, VER_MAJOR, VER_MINOR, VER_BUILD, VER_TWEAK
     path = BUILD_DIR
     options, remainder = getopt.gnu_getopt(sys.argv[1:], 'b:hsf', ['build=',
                                                                    'help',
@@ -116,6 +116,14 @@ def parse_options():
             X86ONLY = True
         elif opt == '--x64-only' and not X86ONLY:
             X64ONLY = True
+        elif opt == '--major':
+            VER_MAJOR = arg
+        elif opt == '--minor':
+            VER_MINOR = arg
+        elif opt == '--patch':
+            VER_BUILD = arg
+        elif opt == '--revision':
+            VER_TWEAK = arg
         else:
             raise MKException("Invalid command line option '%s'" % opt)
     set_build_dir(path)

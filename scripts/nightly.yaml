@@ -102,6 +102,10 @@ stages:
             --x86-only
             --dotnet-key=$(Build.SourcesDirectory)/resources/z3.snk
             --zip
+            --major=$(Major)
+            --minor=$(Minor)
+            --patch=$(Patch)
+            --revision=$(Build.BuildId)
     - task: CopyFiles@2
       inputs:
         sourceFolder: dist
@@ -125,6 +129,10 @@ stages:
             --x64-only
             --dotnet-key=$(Build.SourcesDirectory)/resources/z3.snk
             --zip
+                --major=$(Major)
+            --minor=$(Minor)
+            --patch=$(Patch)
+            --revision=$(Build.BuildId)
     - task: CopyFiles@2
       inputs:
         sourceFolder: dist
@@ -474,8 +482,6 @@ stages:
     steps:
     - task: NuGetAuthenticate@0
       displayName: 'NuGet Authenticate'
-      inputs:
-        nuGetServiceConnections: Z3NightlyNuget
     - task: NuGetToolInstaller@0
       inputs:
         versionSpec: 5.x
@@ -494,14 +500,15 @@ stages:
       displayName: 'NuGet Nightly x64 push'
       inputs:
         command: push
-        publishVstsFeed: 'Z3 Public Nuget/Z3-Public-Nightly'
+        publishVstsFeed: 'Z3-Public-Nightly'
         packagesToPush: $(Agent.TempDirectory)/x64/*.nupkg
         allowPackageConflicts: true
+        continueOnError: true 
     - task: NuGetCommand@2
       displayName: 'NuGet Nightly x86 push'
       inputs:
         command: push
-        publishVstsFeed: 'Z3 Public Nuget/Z3-Public-Nightly'
+        publishVstsFeed: 'z3Build/Z3-Public-Nightly'
         packagesToPush: $(Agent.TempDirectory)/x86/*.nupkg
         allowPackageConflicts: true
 

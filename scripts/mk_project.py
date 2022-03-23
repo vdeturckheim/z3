@@ -7,12 +7,17 @@
 ############################################
 from mk_util import *
 
-def init_version():
-    set_version(4, 8, 16, 0)
+DEFAULT_major = 4;
+DEFAULT_minor = 8
+DEFAULT_patch = 16
+DEFAULT_tweak = 0
+
+def init_version(major=DEFAULT_major, minor=DEFAULT_minor, patch=DEFAULT_patch, revision=DEFAULT_tweak):
+    set_version(major, minor, patch, revision)
     
 # Z3 Project definition
 def init_project_def():
-    init_version()
+    init_version(VER_MAJOR, VER_MINOR, VER_BUILD, VER_TWEAK)
     add_lib('util', [], includes2install = ['z3_version.h'])
     add_lib('polynomial', ['util'], 'math/polynomial')
     add_lib('interval', ['util'], 'math/interval')
