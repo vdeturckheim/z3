@@ -4,7 +4,7 @@ variables:
   Minor: '8'
   Patch: '16'
   NightlyVersion: $(Major).$(Minor).$(Patch).$(Build.BuildId)-$(Build.DefinitionName)
-  MacFlags: 'CXXFLAGS="-arch arm64 -arch x86_64" LINK_EXTRA_FLAGS="-arch arm64 -arch x86_64" SLINK_EXTRA_FLAGS="-arch arm64 -arch x86_64" FPMATH_ENABLED=False'
+  MacFlags: 'CXXFLAGS="-arch x86_64" LINK_EXTRA_FLAGS="-arch x86_64" SLINK_EXTRA_FLAGS="-arch x86_64"'
 
 stages:
 - stage: Build
@@ -23,6 +23,7 @@ stages:
       inputs:
         artifactName: 'Mac'
         targetPath: $(Build.ArtifactStagingDirectory)
+
 
   - job: Ubuntu
     displayName: "Ubuntu build"
@@ -193,6 +194,7 @@ stages:
         patchVersion: $(Patch)
         arguments: 'pack $(Agent.TempDirectory)\package\out\Microsoft.Z3.sym.nuspec -Version $(NightlyVersion) -OutputDirectory $(Build.ArtifactStagingDirectory) -Verbosity detailed -Symbols -SymbolPackageFormat snupkg -BasePath $(Agent.TempDirectory)\package\out' 
     - task: EsrpCodeSigning@1
+      continueOnError: true
       displayName: 'Sign Package'
       inputs:
         ConnectedServiceName: 'z3-esrp-signing-2'
@@ -220,6 +222,7 @@ stages:
         MaxConcurrency: '50'
         MaxRetryAttempts: '5'
     - task: EsrpCodeSigning@1
+      continueOnError: true 
       displayName: 'Sign Symbol Package'
       inputs:
         ConnectedServiceName: 'z3-esrp-signing-2'
@@ -296,6 +299,7 @@ stages:
         patchVersion: $(Patch)
         arguments: 'pack $(Agent.TempDirectory)\package\out\Microsoft.Z3.x86.sym.nuspec -Version $(NightlyVersion) -OutputDirectory $(Build.ArtifactStagingDirectory) -Verbosity detailed -Symbols -SymbolPackageFormat snupkg -BasePath $(Agent.TempDirectory)\package\out' 
     - task: EsrpCodeSigning@1
+      continueOnError: true 
       displayName: 'Sign Package'
       inputs:
         ConnectedServiceName: 'z3-esrp-signing-2'
@@ -323,6 +327,7 @@ stages:
         MaxConcurrency: '50'
         MaxRetryAttempts: '5'
     - task: EsrpCodeSigning@1
+      continueOnError: true 
       displayName: 'Sign Symbol Package'
       inputs:
         ConnectedServiceName: 'z3-esrp-signing-2'
@@ -391,6 +396,7 @@ stages:
       inputs:
         artifactName: 'Python packages'
         targetPath: src/api/python/dist
+
 
 - stage: Deployment
   jobs:

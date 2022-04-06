@@ -24,7 +24,8 @@ using namespace smt;
 
 theory_user_propagator::theory_user_propagator(context& ctx):
     theory(ctx, ctx.get_manager().mk_family_id(user_propagator::plugin::name())),
-    m_var2expr(ctx.get_manager())
+    m_var2expr(ctx.get_manager()),
+    m_to_add(ctx.get_manager())
 {}
 
 theory_user_propagator::~theory_user_propagator() {
@@ -33,13 +34,15 @@ theory_user_propagator::~theory_user_propagator() {
 
 void theory_user_propagator::force_push() {
     for (; m_num_scopes > 0; --m_num_scopes) {
+        flet<bool> _pushing(m_push_popping, true);
         theory::push_scope_eh();
-        m_push_eh(m_user_context);
         m_prop_lim.push_back(m_prop.size());
+        m_to_add_lim.push_back(m_to_add.size());
+        m_push_eh(m_user_context);
     }
 }
 
-void theory_user_propagator::add_expr(expr* term) {
+void theory_user_propagator::add_expr(expr* term, bool ensure_enode) {
     force_push();
     expr_ref r(m);
     expr* e = term;
@@ -52,7 +55,7 @@ void theory_user_propagator::add_expr(expr* term) {
         e = r;
         ctx.mark_as_relevant(eq.get());
     }
-    enode* n = ensure_enode(e);
+    enode* n = ensure_enode ? this->ensure_enode(e) : ctx.get_enode(e);
     if (is_attached_to_var(n))
         return;
 
@@ -82,6 +85,7 @@ void theory_user_propagator::propagate_cb(
     expr* conseq) {
     CTRACE("user_propagate", ctx.lit_internalized(conseq) && ctx.get_assignment(ctx.get_literal(conseq)) == l_true,
            ctx.display(tout << "redundant consequence: " << mk_pp(conseq, m) << "\n"));
+
     expr_ref _conseq(conseq, m);
     ctx.get_rewriter()(conseq, _conseq);
     if (ctx.lit_internalized(_conseq) && ctx.get_assignment(ctx.get_literal(_conseq)) == l_true) 
@@ -90,7 +94,10 @@ void theory_user_propagator::propagate_cb(
 }
 
 void theory_user_propagator::register_cb(expr* e) {
-    add_expr(e);
+    if (m_push_popping)
+        m_to_add.push_back(e);
+    else
+        add_expr(e, true);
 }
 
 theory * theory_user_propagator::mk_fresh(context * new_ctx) {
@@ -144,25 +151,29 @@ void theory_user_propagator::new_fixed_eh(theory_var v, expr* value, unsigned nu
      }
 }
 
-void theory_user_propagator::push_scope_eh() {
+void theory_user_propagator::push_scope_eh() {    
     ++m_num_scopes;
 }
 
 void theory_user_propagator::pop_scope_eh(unsigned num_scopes) {
+    flet<bool> _popping(m_push_popping, true);
     unsigned n = std::min(num_scopes, m_num_scopes);
     m_num_scopes -= n;
     num_scopes -= n;
     if (num_scopes == 0)
         return;
-    m_pop_eh(m_user_context, num_scopes);
     theory::pop_scope_eh(num_scopes);
     unsigned old_sz = m_prop_lim.size() - num_scopes;
     m_prop.shrink(m_prop_lim[old_sz]);
     m_prop_lim.shrink(old_sz);
+    old_sz = m_to_add_lim.size() - num_scopes;
+    m_to_add.shrink(m_to_add_lim[old_sz]);
+    m_to_add_lim.shrink(old_sz);
+    m_pop_eh(m_user_context, num_scopes);
 }
 
 bool theory_user_propagator::can_propagate() {
-    return m_qhead < m_prop.size();
+    return m_qhead < m_prop.size() || !m_to_add.empty();
 }
 
 void theory_user_propagator::propagate_consequence(prop_info const& prop) {
@@ -215,10 +226,19 @@ void theory_user_propagator::propagate_new_fixed(prop_info const& prop) {
 
 void theory_user_propagator::propagate() {
     TRACE("user_propagate", tout << "propagating queue head: " << m_qhead << " prop queue: " << m_prop.size() << "\n");
-    if (m_qhead == m_prop.size())
+    if (m_qhead == m_prop.size() && m_to_add_qhead == m_to_add.size())
         return;
     force_push();
-    unsigned qhead = m_qhead;
+    
+    unsigned qhead = m_to_add_qhead;
+    if (qhead < m_to_add.size()) {
+        for (; qhead < m_to_add.size(); ++qhead)
+            add_expr(m_to_add.get(qhead), true);
+        ctx.push_trail(value_trail<unsigned>(m_to_add_qhead));
+        m_to_add_qhead = qhead;
+    }
+
+    qhead = m_qhead;
     while (qhead < m_prop.size() && !ctx.inconsistent()) {
         auto const& prop = m_prop[qhead];
         if (prop.m_var == null_theory_var)
@@ -243,7 +263,7 @@ bool theory_user_propagator::internalize_term(app* term)  {
     if (term->get_family_id() == get_id() && !ctx.e_internalized(term)) 
         ctx.mk_enode(term, true, false, true);
     
-    add_expr(term);
+    add_expr(term, false);
     
     if (!m_created_eh)
         throw default_exception("You have to register a created event handler for new terms if you track them");

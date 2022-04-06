@@ -29,6 +29,7 @@ Revision History:
 #include "ast/proofs/proof_checker.h"
 #include "ast/ast_util.h"
 #include "ast/well_sorted.h"
+#include "model/model_params.hpp"
 #include "model/model.h"
 #include "model/model_pp.h"
 #include "smt/smt_context.h"
@@ -205,7 +206,7 @@ namespace smt {
         ast_translation tr(src_ctx.m, m, false);
         for (unsigned i = 0; i < src_ctx.m_user_propagator->get_num_vars(); ++i) {
             app* e = src_ctx.m_user_propagator->get_expr(i);
-            m_user_propagator->add_expr(tr(e));
+            m_user_propagator->add_expr(tr(e), true);
         }
     }
 
@@ -4638,7 +4639,8 @@ namespace smt {
     }
 
     void context::add_rec_funs_to_model() {
-        if (m_model)
+        model_params p;
+        if (m_model && p.user_functions())
             m_model->add_rec_funs();
     }
 

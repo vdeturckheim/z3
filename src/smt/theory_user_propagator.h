@@ -78,6 +78,10 @@ namespace smt {
         stats                  m_stats;
         expr_ref_vector        m_var2expr;
         unsigned_vector        m_expr2var;
+        bool                   m_push_popping;
+        expr_ref_vector        m_to_add;
+        unsigned_vector        m_to_add_lim;
+        unsigned               m_to_add_qhead = 0;
 
         expr* var2expr(theory_var v) { return m_var2expr.get(v); }
         theory_var expr2var(expr* e) { check_defined(e); return m_expr2var[e->get_id()]; }
@@ -110,7 +114,7 @@ namespace smt {
             m_fresh_eh     = fresh_eh;
         }
 
-        void add_expr(expr* e);
+        void add_expr(expr* e, bool ensure_enode);
 
         void register_final(user_propagator::final_eh_t& final_eh) { m_final_eh = final_eh; }
         void register_fixed(user_propagator::fixed_eh_t& fixed_eh) { m_fixed_eh = fixed_eh; }
