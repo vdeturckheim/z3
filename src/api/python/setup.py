@@ -154,16 +154,10 @@ def _copy_bins():
 
     _clean_bins()
 
-    python_dir = None
-    if RELEASE_DIR is not None:
-        python_dir = os.path.join(RELEASE_DIR, 'bin', 'python')
-    elif SRC_DIR == SRC_DIR_LOCAL:
-        python_dir = os.path.join(SRC_DIR, 'src', 'api', 'python')
-    if python_dir is not None:
-        py_z3_build_dir = os.path.join(BUILD_DIR, 'python', 'z3')
-        root_z3_dir = os.path.join(ROOT_DIR, 'z3')
-        shutil.copy(os.path.join(py_z3_build_dir, 'z3core.py'), root_z3_dir)
-        shutil.copy(os.path.join(py_z3_build_dir, 'z3consts.py'), root_z3_dir)
+    py_z3_build_dir = os.path.join(BUILD_DIR, 'python', 'z3')
+    root_z3_dir = os.path.join(ROOT_DIR, 'z3')
+    shutil.copy(os.path.join(py_z3_build_dir, 'z3core.py'), root_z3_dir)
+    shutil.copy(os.path.join(py_z3_build_dir, 'z3consts.py'), root_z3_dir)
 
     # STEP 2: Copy the shared library, the executable and the headers
 
@@ -279,8 +273,10 @@ if 'bdist_wheel' in sys.argv and '--plat-name' not in sys.argv:
             osver = RELEASE_METADATA[3]
             if osver.count('.') > 1:
                 osver = '.'.join(osver.split('.')[:2])
-            if arch == 'x64':
+            if arch == 'x64':                
                 plat_name ='macosx_%s_x86_64' % osver.replace('.', '_')
+            elif arch == 'arm64':
+                plat_name ='macosx_%s_arm64' % osver.replace('.', '_')                
             else:
                 raise Exception(f"idk how os {distos} {osver} works. what goes here?")
         else:
