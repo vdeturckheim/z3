@@ -57,8 +57,8 @@ jobs:
         run: npm test
 
       - name: Pack
-        run: npm pack && ls
+        run: npm pack
 
-#      - uses: actions/upload-artifact@v3
-#        with:
-#          path: *.
+      - uses: actions/upload-artifact@v3
+        with:
+          path: '*.tgz'
