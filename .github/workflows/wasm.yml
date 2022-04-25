@@ -61,4 +61,4 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          path: z3-solver-4.8.17.tgz
+          path: src/api/js/z3-solver-4.8.17.tgz
