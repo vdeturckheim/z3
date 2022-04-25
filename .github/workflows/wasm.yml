@@ -32,6 +32,12 @@ jobs:
           version: ${{env.EM_VERSION}}
           actions-cache-folder: 'emsdk-cache'
 
+      - name: Prepare for publish
+        run: |
+          npm version $(node -e 'console.log(fs.readFileSync("../../../scripts/release.yml", "utf8").match(/ReleaseVersion:\s*\x27(\S+)\x27/)[1])')
+          mv PUBLISHED_README.md README.md
+          cp ../../../LICENSE.txt .
+
       - name: Install dependencies
         run: npm ci
 
@@ -49,3 +55,10 @@ jobs:
 
       - name: Test
         run: npm test
+
+      - name: Pack
+        run: npm pack && ls
+
+#      - uses: actions/upload-artifact@v3
+#        with:
+#          path: *.
