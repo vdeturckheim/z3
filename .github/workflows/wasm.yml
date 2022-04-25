@@ -57,8 +57,8 @@ jobs:
         run: npm test
 
       - name: Pack
-        run: npm pack
+        run: npm pack && ls && pwd
 
       - uses: actions/upload-artifact@v3
         with:
-          path: '*.tgz'
+          path: z3-solver-4.8.17.tgz
